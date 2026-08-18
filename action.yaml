@@ -45,9 +45,9 @@ runs:
         echo "Detected Unity version: $UNITY_EDITOR_VERSION"
         if [ "${{ inputs.build-target }}" = "linux" ]; then
           UNITY_MODULES="linux-mono"
-        if [ "${{ inputs.build-target }}" = "macos" ]; then
+        elif [ "${{ inputs.build-target }}" = "macos" ]; then
           UNITY_MODULES="mac-mono"
-        if [ "${{ inputs.build-target }}" = "windows" ]; then
+        elif [ "${{ inputs.build-target }}" = "windows" ]; then
           UNITY_MODULES="windows-mono"
         else
           echo "Build target ${{ inputs.build-target }} is not valid!"
