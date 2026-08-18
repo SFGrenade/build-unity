@@ -32,9 +32,38 @@ runs:
         unity --version
       shell: pwsh
 
+    - name: 'Install Unity License'
+      id: unity-license-install
+      run: |
+        mkdir -p "$HOME/.local/share/unity3d/Unity/"
+        cat <<< "${{ env.UNITY_LICENSE }}" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
+      shell: bash
+
     - name: 'Install Unity Editor'
       run: |
-        UNITY_VERSION=$(grep 'm_EditorVersion:' "${{ inputs.project-path }}/ProjectSettings/ProjectVersion.txt" | sed 's/m_EditorVersion:[[:space:]]*//' | sed 's/[a-z].*//')
-        echo "Detected Unity version: $UNITY_VERSION"
-        unity install $UNITY_VERSION
+        UNITY_EDITOR_VERSION=$(grep 'm_EditorVersion:' "${{ inputs.project-path }}/ProjectSettings/ProjectVersion.txt" | sed 's/m_EditorVersion:[[:space:]]*//' | sed 's/[a-z].*//')
+        echo "Detected Unity version: $UNITY_EDITOR_VERSION"
+        UNITY_MODULES=''
+        if [ "${{ inputs.build-target }}" = "linux" ]; then
+          UNITY_MODULES='linux-mono'
+        if [ "${{ inputs.build-target }}" = "macos" ]; then
+          UNITY_MODULES='mac-mono'
+        if [ "${{ inputs.build-target }}" = "windows" ]; then
+          UNITY_MODULES='windows-mono'
+        else
+          echo "Build target ${{ inputs.build-target }} is not valid!"
+          exit 1
+        fi
+        unity install $UNITY_EDITOR_VERSION -m $UNITY_MODULES
+      shell: bash
+
+    - name: 'Run Unity Editor'
+      run: |
+        unity run "${{ inputs.project-path }}" -- -username "${{ env.UNITY_EMAIL }}" -password "${{ env.UNITY_PASSWORD }}" -batchmode -nographics -quit -executeMethod "${{ inputs.build-method }}"
+      shell: bash
+
+    - name: 'Uninstall Unity License'
+      if: ${{ always() }}
+      run: |
+        rm "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
       shell: bash
