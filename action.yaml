@@ -64,17 +64,14 @@ runs:
       run: |
         UNITY_EDITOR_VERSION=$(grep 'm_EditorVersion:' "${{ inputs.project-path }}/ProjectSettings/ProjectVersion.txt" | sed 's/m_EditorVersion:[[:space:]]*//' | sed 's/[a-z].*//')
         echo "Detected Unity version: $UNITY_EDITOR_VERSION"
+        unity install $UNITY_EDITOR_VERSION --accept-eula --yes
         if [ "${{ inputs.build-target }}" = "linux" ]; then
-          UNITY_MODULES="linux-mono"
+          unity install-modules --editor-version $UNITY_EDITOR_VERSION --module linux-mono --childModules --accept-eula --yes
         elif [ "${{ inputs.build-target }}" = "macos" ]; then
-          UNITY_MODULES="mac-mono"
+          unity install-modules --editor-version $UNITY_EDITOR_VERSION --module mac-mono --childModules --accept-eula --yes
         elif [ "${{ inputs.build-target }}" = "windows" ]; then
-          UNITY_MODULES="windows-mono"
-        else
-          echo "Build target ${{ inputs.build-target }} is not valid!"
-          exit 1
+          unity install-modules --editor-version $UNITY_EDITOR_VERSION --module windows-mono --childModules --accept-eula --yes
         fi
-        unity install $UNITY_EDITOR_VERSION --module $UNITY_MODULES --childModules --accept-eula --yes
       shell: bash
 
     - name: 'Print Install Errors'
