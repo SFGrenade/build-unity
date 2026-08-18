@@ -71,13 +71,13 @@ runs:
 
         if [ "${{ inputs.build-target }}" = "linux" ]; then
           echo "Installing Editor module linux-mono"
-          unity install-modules --editor-version $UNITY_EDITOR_VERSION --module linux-mono --childModules --accept-eula --yes
+          unity install-modules --editor-version $UNITY_EDITOR_VERSION -m linux-mono --no-cm --accept-eula --yes
         elif [ "${{ inputs.build-target }}" = "macos" ]; then
           echo "Installing Editor module mac-mono"
-          unity install-modules --editor-version $UNITY_EDITOR_VERSION --module mac-mono --childModules --accept-eula --yes
+          unity install-modules --editor-version $UNITY_EDITOR_VERSION -m mac-mono --no-cm --accept-eula --yes
         elif [ "${{ inputs.build-target }}" = "windows" ]; then
           echo "Installing Editor module windows-mono"
-          unity install-modules --editor-version $UNITY_EDITOR_VERSION --module windows-mono --childModules --accept-eula --yes
+          unity install-modules --editor-version $UNITY_EDITOR_VERSION -m windows-mono --no-cm --accept-eula --yes
         fi
       shell: bash
 
