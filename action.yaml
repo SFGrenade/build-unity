@@ -38,6 +38,9 @@ runs:
         export UNITY_CLI_CHANNEL=beta && echo "UNITY_CLI_CHANNEL=beta" >>$GITHUB_ENV
       shell: bash
 
+    - name: 'Setup 7-Zip'
+      uses: milliewalky/setup-7-zip@v2
+
     - name: 'Setup Unity'
       if: ${{ (runner.os == 'Linux') || (runner.os == 'macOS') }}
       run: |
@@ -50,6 +53,13 @@ runs:
         irm https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.ps1 | iex
         unity --version
       shell: pwsh
+
+    - name: 'Install Unity License'
+      id: unity-license-install
+      run: |
+        mkdir -p "$HOME/.local/share/unity3d/Unity/"
+        cat <<< "${{ env.UNITY_LICENSE }}" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
+      shell: bash
 
     - name: 'Install Unity Editor'
       id: unity-editor-install
@@ -75,13 +85,6 @@ runs:
       run: |
         unity logs
         unity doctor
-      shell: bash
-
-    - name: 'Install Unity License'
-      id: unity-license-install
-      run: |
-        mkdir -p "$HOME/.local/share/unity3d/Unity/"
-        cat <<< "${{ env.UNITY_LICENSE }}" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
       shell: bash
 
     - name: 'Run Unity Editor'
