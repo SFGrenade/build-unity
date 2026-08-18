@@ -50,6 +50,12 @@ runs:
       run: |
         brew install p7zip
       shell: bash
+    - name: 'Setup 7-Zip'
+      if: ${{ (runner.os == 'Windows') }}
+      continue-on-error: true
+      run: |
+        echo "nothing to do?"
+      shell: pwsh
 
     - name: 'Setup Unity'
       if: ${{ (runner.os == 'Linux') || (runner.os == 'macOS') }}
