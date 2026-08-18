@@ -43,13 +43,12 @@ runs:
       run: |
         UNITY_EDITOR_VERSION=$(grep 'm_EditorVersion:' "${{ inputs.project-path }}/ProjectSettings/ProjectVersion.txt" | sed 's/m_EditorVersion:[[:space:]]*//' | sed 's/[a-z].*//')
         echo "Detected Unity version: $UNITY_EDITOR_VERSION"
-        UNITY_MODULES=''
         if [ "${{ inputs.build-target }}" = "linux" ]; then
-          UNITY_MODULES='linux-mono'
+          UNITY_MODULES="linux-mono"
         if [ "${{ inputs.build-target }}" = "macos" ]; then
-          UNITY_MODULES='mac-mono'
+          UNITY_MODULES="mac-mono"
         if [ "${{ inputs.build-target }}" = "windows" ]; then
-          UNITY_MODULES='windows-mono'
+          UNITY_MODULES="windows-mono"
         else
           echo "Build target ${{ inputs.build-target }} is not valid!"
           exit 1
