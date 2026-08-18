@@ -51,13 +51,6 @@ runs:
         unity --version
       shell: pwsh
 
-    - name: 'Install Unity License'
-      id: unity-license-install
-      run: |
-        mkdir -p "$HOME/.local/share/unity3d/Unity/"
-        cat <<< "${{ env.UNITY_LICENSE }}" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
-      shell: bash
-
     - name: 'Install Unity Editor'
       id: unity-editor-install
       continue-on-error: true
@@ -82,6 +75,13 @@ runs:
       run: |
         unity logs
         unity doctor
+      shell: bash
+
+    - name: 'Install Unity License'
+      id: unity-license-install
+      run: |
+        mkdir -p "$HOME/.local/share/unity3d/Unity/"
+        cat <<< "${{ env.UNITY_LICENSE }}" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
       shell: bash
 
     - name: 'Run Unity Editor'
