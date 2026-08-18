@@ -16,6 +16,10 @@ inputs:
     description: 'Editor method to execute.'
     required: true
     default: ''
+outputs:
+  success:
+    description: "Success"
+    value: ${{ steps.unity-editor-run.outcome == 'success' }}
 runs:
   using: 'composite'
   steps:
@@ -40,6 +44,8 @@ runs:
       shell: bash
 
     - name: 'Install Unity Editor'
+      id: unity-editor-install
+      continue-on-error: true
       run: |
         UNITY_EDITOR_VERSION=$(grep 'm_EditorVersion:' "${{ inputs.project-path }}/ProjectSettings/ProjectVersion.txt" | sed 's/m_EditorVersion:[[:space:]]*//' | sed 's/[a-z].*//')
         echo "Detected Unity version: $UNITY_EDITOR_VERSION"
@@ -53,16 +59,19 @@ runs:
           echo "Build target ${{ inputs.build-target }} is not valid!"
           exit 1
         fi
-        unity install $UNITY_EDITOR_VERSION -m $UNITY_MODULES
+        unity install $UNITY_EDITOR_VERSION --module $UNITY_MODULES --childModules
       shell: bash
 
     - name: 'Run Unity Editor'
+      id: unity-editor-run
+      continue-on-error: true
+      if: ${{ steps.unity-editor-install.outcome == 'success' }}
       run: |
         unity run "${{ inputs.project-path }}" -- -username "${{ env.UNITY_EMAIL }}" -password "${{ env.UNITY_PASSWORD }}" -batchmode -nographics -quit -executeMethod "${{ inputs.build-method }}"
       shell: bash
 
     - name: 'Uninstall Unity License'
-      if: ${{ always() }}
+      if: ${{ steps.unity-license-install.outcome == 'success' }}
       run: |
         rm "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
       shell: bash
