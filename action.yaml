@@ -81,6 +81,7 @@ runs:
       if: ${{ steps.unity-editor-install.outcome == 'failure' }}
       run: |
         unity logs
+        unity doctor
       shell: bash
 
     - name: 'Run Unity Editor'
@@ -95,6 +96,7 @@ runs:
       if: ${{ steps.unity-editor-run.outcome == 'failure' }}
       run: |
         unity logs
+        unity doctor
       shell: bash
 
     - name: 'Uninstall Unity License'
