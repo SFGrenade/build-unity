@@ -65,11 +65,18 @@ runs:
         UNITY_EDITOR_VERSION=$(grep 'm_EditorVersion:' "${{ inputs.project-path }}/ProjectSettings/ProjectVersion.txt" | sed 's/m_EditorVersion:[[:space:]]*//' | sed 's/[a-z].*//')
         echo "Detected Unity version: $UNITY_EDITOR_VERSION"
         unity install $UNITY_EDITOR_VERSION --accept-eula --yes
+
+        echo "Available Modules:"
+        unity install-modules --editor-version $UNITY_EDITOR_VERSION --list
+
         if [ "${{ inputs.build-target }}" = "linux" ]; then
+          echo "Installing Editor module linux-mono"
           unity install-modules --editor-version $UNITY_EDITOR_VERSION --module linux-mono --childModules --accept-eula --yes
         elif [ "${{ inputs.build-target }}" = "macos" ]; then
+          echo "Installing Editor module mac-mono"
           unity install-modules --editor-version $UNITY_EDITOR_VERSION --module mac-mono --childModules --accept-eula --yes
         elif [ "${{ inputs.build-target }}" = "windows" ]; then
+          echo "Installing Editor module windows-mono"
           unity install-modules --editor-version $UNITY_EDITOR_VERSION --module windows-mono --childModules --accept-eula --yes
         fi
       shell: bash
