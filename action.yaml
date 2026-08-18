@@ -26,13 +26,35 @@ runs:
     - name: 'Setup Unity'
       if: ${{ (runner.os == 'Linux') || (runner.os == 'macOS') }}
       run: |
-        curl -fsSL https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.sh | UNITY_CLI_CHANNEL=beta bash
+        echo "UNITY_NO_BANNER=1" >>$GITHUB_ENV
+        echo "UNITY_NON_INTERACTIVE=1" >>$GITHUB_ENV
+        echo "UNITY_NO_PAGER=1" >>$GITHUB_ENV
+        echo "UNITY_NO_ELEVATE=1" >>$GITHUB_ENV
+        echo "UNITY_NO_UPDATE_CHECK=1" >>$GITHUB_ENV
+        echo "UNITY_NO_CRASH_REPORT=1" >>$GITHUB_ENV
+        echo "UNITY_NO_CONSENT_PROMPT=1" >>$GITHUB_ENV
+
+        echo "UNITY_VERBOSE=1" >>$GITHUB_ENV
+
+        echo "UNITY_CLI_CHANNEL=beta" >>$GITHUB_ENV
+        curl -fsSL https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.sh | bash
         unity --version
       shell: bash
     - name: 'Setup Unity'
       if: ${{ (runner.os == 'Windows') }}
       run: |
-        $env:UNITY_CLI_CHANNEL='beta'; irm https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.ps1 | iex
+        echo "UNITY_NO_BANNER=1" >>$env:GITHUB_ENV
+        echo "UNITY_NON_INTERACTIVE=1" >>$env:GITHUB_ENV
+        echo "UNITY_NO_PAGER=1" >>$env:GITHUB_ENV
+        echo "UNITY_NO_ELEVATE=1" >>$env:GITHUB_ENV
+        echo "UNITY_NO_UPDATE_CHECK=1" >>$env:GITHUB_ENV
+        echo "UNITY_NO_CRASH_REPORT=1" >>$env:GITHUB_ENV
+        echo "UNITY_NO_CONSENT_PROMPT=1" >>$env:GITHUB_ENV
+
+        echo "UNITY_VERBOSE=1" >>$env:GITHUB_ENV
+
+        echo "UNITY_CLI_CHANNEL=beta" >>$env:GITHUB_ENV
+        irm https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.ps1 | iex
         unity --version
       shell: pwsh
 
@@ -62,12 +84,24 @@ runs:
         unity install $UNITY_EDITOR_VERSION --module $UNITY_MODULES --childModules
       shell: bash
 
+    - name: 'Print Install Errors'
+      if: ${{ steps.unity-editor-install.outcome == 'failure' }}
+      run: |
+        unity logs
+      shell: bash
+
     - name: 'Run Unity Editor'
       id: unity-editor-run
       continue-on-error: true
       if: ${{ steps.unity-editor-install.outcome == 'success' }}
       run: |
         unity run "${{ inputs.project-path }}" -- -username "${{ env.UNITY_EMAIL }}" -password "${{ env.UNITY_PASSWORD }}" -batchmode -nographics -quit -executeMethod "${{ inputs.build-method }}"
+      shell: bash
+
+    - name: 'Print Run Errors'
+      if: ${{ steps.unity-editor-run.outcome == 'failure' }}
+      run: |
+        unity logs
       shell: bash
 
     - name: 'Uninstall Unity License'
