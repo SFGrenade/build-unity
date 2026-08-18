@@ -38,25 +38,6 @@ runs:
         export UNITY_CLI_CHANNEL=beta && echo "UNITY_CLI_CHANNEL=beta" >>$GITHUB_ENV
       shell: bash
 
-    - name: 'Setup 7-Zip'
-      uses: ${{ (runner.os == 'Linux') }}
-      continue-on-error: true
-      run: |
-        apt update && apt upgrade && apt install p7zip-full 7zip
-      shell: bash
-    - name: 'Setup 7-Zip'
-      if: ${{ (runner.os == 'macOS') }}
-      continue-on-error: true
-      run: |
-        brew install p7zip
-      shell: bash
-    - name: 'Setup 7-Zip'
-      if: ${{ (runner.os == 'Windows') }}
-      continue-on-error: true
-      run: |
-        echo "nothing to do?"
-      shell: pwsh
-
     - name: 'Setup Unity'
       if: ${{ (runner.os == 'Linux') || (runner.os == 'macOS') }}
       run: |
