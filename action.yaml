@@ -23,8 +23,7 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: 'Setup Unity'
-      if: ${{ (runner.os == 'Linux') || (runner.os == 'macOS') }}
+    - name: 'Setup Env'
       run: |
         export UNITY_NO_BANNER=1 && echo "UNITY_NO_BANNER=1" >>$GITHUB_ENV
         export UNITY_NON_INTERACTIVE=1 && echo "UNITY_NON_INTERACTIVE=1" >>$GITHUB_ENV
@@ -37,23 +36,17 @@ runs:
         export UNITY_VERBOSE=1 && echo "UNITY_VERBOSE=1" >>$GITHUB_ENV
 
         export UNITY_CLI_CHANNEL=beta && echo "UNITY_CLI_CHANNEL=beta" >>$GITHUB_ENV
+      shell: bash
+
+    - name: 'Setup Unity'
+      if: ${{ (runner.os == 'Linux') || (runner.os == 'macOS') }}
+      run: |
         curl -fsSL https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.sh | bash
         unity --version
       shell: bash
     - name: 'Setup Unity'
       if: ${{ (runner.os == 'Windows') }}
       run: |
-        $env:UNITY_NO_BANNER=1; echo "UNITY_NO_BANNER=1" >>$env:GITHUB_ENV
-        $env:UNITY_NON_INTERACTIVE=1; echo "UNITY_NON_INTERACTIVE=1" >>$env:GITHUB_ENV
-        $env:UNITY_NO_PAGER=1; echo "UNITY_NO_PAGER=1" >>$env:GITHUB_ENV
-        $env:UNITY_NO_ELEVATE=1; echo "UNITY_NO_ELEVATE=1" >>$env:GITHUB_ENV
-        $env:UNITY_NO_UPDATE_CHECK=1; echo "UNITY_NO_UPDATE_CHECK=1" >>$env:GITHUB_ENV
-        $env:UNITY_NO_CRASH_REPORT=1; echo "UNITY_NO_CRASH_REPORT=1" >>$env:GITHUB_ENV
-        $env:UNITY_NO_CONSENT_PROMPT=1; echo "UNITY_NO_CONSENT_PROMPT=1" >>$env:GITHUB_ENV
-
-        $env:UNITY_VERBOSE=1; echo "UNITY_VERBOSE=1" >>$env:GITHUB_ENV
-
-        $env:UNITY_CLI_CHANNEL=beta; echo "UNITY_CLI_CHANNEL=beta" >>$env:GITHUB_ENV
         irm https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.ps1 | iex
         unity --version
       shell: pwsh
@@ -81,7 +74,7 @@ runs:
           echo "Build target ${{ inputs.build-target }} is not valid!"
           exit 1
         fi
-        unity install $UNITY_EDITOR_VERSION --module $UNITY_MODULES --childModules
+        unity install $UNITY_EDITOR_VERSION --module $UNITY_MODULES --childModules --accept-eula --yes
       shell: bash
 
     - name: 'Print Install Errors'
