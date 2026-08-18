@@ -22,13 +22,13 @@ runs:
     - name: 'Setup Unity'
       if: ${{ (runner.os == 'Linux') || (runner.os == 'macOS') }}
       run: |
-        curl -fsSL https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.sh | bash
+        curl -fsSL https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.sh | UNITY_CLI_CHANNEL=beta bash
         unity --version
       shell: bash
     - name: 'Setup Unity'
       if: ${{ (runner.os == 'Windows') }}
       run: |
-        irm https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.ps1 | iex
+        $env:UNITY_CLI_CHANNEL='beta'; irm https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.ps1 | iex
         unity --version
       shell: pwsh
 
