@@ -1,0 +1,40 @@
+name: 'Unity Build'
+description: 'A Github Action to build Unity projects using command line arguments.'
+branding:
+  icon: 'play-circle'
+  color: 'blue'
+inputs:
+  project-path:
+    description: 'Path to the Unity project.'
+    required: true
+    default: ''
+  build-target:
+    description: 'Unity build target. One of "linux", "macos", "windows"'
+    required: true
+    default: ''
+  build-method:
+    description: 'Editor method to execute.'
+    required: true
+    default: ''
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Setup Unity'
+      if: ${{ (runner.os == 'Linux') || (runner.os == 'macOS') }}
+      run: |
+        curl -fsSL https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.sh | bash
+        unity --version
+      shell: bash
+    - name: 'Setup Unity'
+      if: ${{ (runner.os == 'Windows') }}
+      run: |
+        irm https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.ps1 | iex
+        unity --version
+      shell: pwsh
+
+    - name: 'Install Unity Editor'
+      run: |
+        UNITY_VERSION=$(grep 'm_EditorVersion:' "${{ inputs.project-path }}/ProjectSettings/ProjectVersion.txt" | sed 's/m_EditorVersion:[[:space:]]*//' | sed 's/[a-z].*//')
+        echo "Detected Unity version: $UNITY_VERSION"
+        unity install $UNITY_VERSION
+      shell: bash
