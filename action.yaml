@@ -84,8 +84,7 @@ runs:
     - name: 'Print Install Errors'
       if: ${{ steps.unity-editor-install.outcome == 'failure' }}
       run: |
-        unity logs --level debug
-        unity doctor --tail 1
+        cat "$HOME/.config/UnityHub/logs/cli-log.json"
       shell: bash
 
     - name: 'Run Unity Editor'
@@ -99,8 +98,7 @@ runs:
     - name: 'Print Run Errors'
       if: ${{ steps.unity-editor-run.outcome == 'failure' }}
       run: |
-        unity logs --level debug
-        unity doctor --tail 1
+        cat "$HOME/.config/UnityHub/logs/cli-log.json"
       shell: bash
 
     - name: 'Uninstall Unity License'
