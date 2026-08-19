@@ -60,19 +60,19 @@ runs:
         UNITY_EDITOR_VERSION=$(grep 'm_EditorVersion:' "${{ inputs.project-path }}/ProjectSettings/ProjectVersion.txt" | sed 's/m_EditorVersion:[[:space:]]*//' | sed 's/[a-z].*//')
         echo "UNITY_EDITOR_VERSION=$UNITY_EDITOR_VERSION" >>$GITHUB_ENV
         echo "Detected Unity version: $UNITY_EDITOR_VERSION"
-        unityhub --headless install --version $UNITY_EDITOR_VERSION
+        sudo unityhub --headless install --version $UNITY_EDITOR_VERSION
 
         unityhub --headless editors --installed
 
         if [ "${{ inputs.build-target }}" = "linux" ]; then
           echo "Installing Editor module linux-mono"
-          unityhub --headless install-modules --version $UNITY_EDITOR_VERSION --module linux-mono --childModules
+          sudo unityhub --headless install-modules --version $UNITY_EDITOR_VERSION --module linux-mono --childModules
         elif [ "${{ inputs.build-target }}" = "macos" ]; then
           echo "Installing Editor module mac-mono"
-          unityhub --headless install-modules --version $UNITY_EDITOR_VERSION --module mac-mono --childModules
+          sudo unityhub --headless install-modules --version $UNITY_EDITOR_VERSION --module mac-mono --childModules
         elif [ "${{ inputs.build-target }}" = "windows" ]; then
           echo "Installing Editor module windows-mono"
-          unityhub --headless install-modules --version $UNITY_EDITOR_VERSION --module windows-mono --childModules
+          sudo unityhub --headless install-modules --version $UNITY_EDITOR_VERSION --module windows-mono --childModules
         fi
       shell: bash
 
@@ -107,10 +107,8 @@ runs:
       id: final-outcome
       run: |
         if [ "${{ steps.unity-editor-run.outcome }}" = "success" ]; then
-          echo "outcome=success" >> $GITHUB_OUTPUT
-        elif [ "${{ steps.unity-editor-run.outcome }}" = "cancelled" ]; then
-          echo "outcome=cancelled" >> $GITHUB_OUTPUT
+          exit 0
         else
-          echo "outcome=failure" >> $GITHUB_OUTPUT
+          exit 1
         fi
       shell: bash
