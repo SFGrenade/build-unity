@@ -35,7 +35,7 @@ runs:
 
         export UNITY_VERBOSE=1 && echo "UNITY_VERBOSE=1" >>$GITHUB_ENV
 
-        export UNITY_CLI_CHANNEL=beta && echo "UNITY_CLI_CHANNEL=beta" >>$GITHUB_ENV
+        export UNITY_CLI_CHANNEL="beta" && echo "UNITY_CLI_CHANNEL=beta" >>$GITHUB_ENV
       shell: bash
 
     - name: 'Setup Unity'
@@ -64,28 +64,28 @@ runs:
       run: |
         UNITY_EDITOR_VERSION=$(grep 'm_EditorVersion:' "${{ inputs.project-path }}/ProjectSettings/ProjectVersion.txt" | sed 's/m_EditorVersion:[[:space:]]*//' | sed 's/[a-z].*//')
         echo "Detected Unity version: $UNITY_EDITOR_VERSION"
-        unity install $UNITY_EDITOR_VERSION --accept-eula --yes
+        unity install --no-childModules --force --yes --accept-eula --no-elevate $UNITY_EDITOR_VERSION
 
         echo "Available Modules:"
         unity install-modules --editor-version $UNITY_EDITOR_VERSION --list
 
         if [ "${{ inputs.build-target }}" = "linux" ]; then
           echo "Installing Editor module linux-mono"
-          unity install-modules --editor-version $UNITY_EDITOR_VERSION -m linux-mono --no-cm --accept-eula --yes
+          unity install-modules --editor-version $UNITY_EDITOR_VERSION --module linux-mono --no-childModules --accept-eula --yes --force --no-elevate --retries 10
         elif [ "${{ inputs.build-target }}" = "macos" ]; then
           echo "Installing Editor module mac-mono"
-          unity install-modules --editor-version $UNITY_EDITOR_VERSION -m mac-mono --no-cm --accept-eula --yes
+          unity install-modules --editor-version $UNITY_EDITOR_VERSION --module mac-mono --no-childModules --accept-eula --yes --force --no-elevate --retries 10
         elif [ "${{ inputs.build-target }}" = "windows" ]; then
           echo "Installing Editor module windows-mono"
-          unity install-modules --editor-version $UNITY_EDITOR_VERSION -m windows-mono --no-cm --accept-eula --yes
+          unity install-modules --editor-version $UNITY_EDITOR_VERSION --module windows-mono --no-childModules --accept-eula --yes --force --no-elevate --retries 10
         fi
       shell: bash
 
     - name: 'Print Install Errors'
       if: ${{ steps.unity-editor-install.outcome == 'failure' }}
       run: |
-        unity logs
-        unity doctor
+        unity logs --level debug
+        unity doctor --tail 1
       shell: bash
 
     - name: 'Run Unity Editor'
@@ -99,8 +99,8 @@ runs:
     - name: 'Print Run Errors'
       if: ${{ steps.unity-editor-run.outcome == 'failure' }}
       run: |
-        unity logs
-        unity doctor
+        unity logs --level debug
+        unity doctor --tail 1
       shell: bash
 
     - name: 'Uninstall Unity License'
