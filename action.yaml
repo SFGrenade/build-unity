@@ -17,9 +17,9 @@ inputs:
     required: true
     default: ''
 outputs:
-  success:
-    description: "Success"
-    value: ${{ steps.unity-editor-run.outcome == 'success' }}
+  outcome:
+    description: "Outcome of the action"
+    value: ${{ steps.final-outcome.outputs.outcome }}
 runs:
   using: 'composite'
   steps:
@@ -107,4 +107,16 @@ runs:
       if: ${{ steps.unity-license-install.outcome == 'success' }}
       run: |
         rm "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
+      shell: bash
+
+    - name: 'Set Outcome'
+      id: final-outcome
+      run: |
+        if [ "${{ steps.unity-editor-run.outcome }}" = "success" ]; then
+          echo "outcome=success" >> $GITHUB_OUTPUT
+        elif [ "${{ steps.unity-editor-run.outcome }}" = "cancelled" ]; then
+          echo "outcome=cancelled" >> $GITHUB_OUTPUT
+        else
+          echo "outcome=failure" >> $GITHUB_OUTPUT
+        fi
       shell: bash
