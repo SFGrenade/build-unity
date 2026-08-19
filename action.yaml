@@ -39,17 +39,12 @@ runs:
       shell: bash
 
     - name: 'Setup Unity'
-      if: ${{ (runner.os == 'Linux') || (runner.os == 'macOS') }}
       run: |
-        curl -fsSL https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.sh | bash
-        unity --version
+        sudo install -d /etc/apt/keyrings
+        curl -fsSL https://hub.unity3d.com/linux/keys/public | sudo gpg --dearmor -o /etc/apt/keyrings/unityhub.gpg
+        echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/unityhub.gpg] https://hub.unity3d.com/linux/repos/deb stable main" | sudo tee /etc/apt/sources.list.d/unityhub.list
+        sudo apt update && sudo apt install unityhub
       shell: bash
-    - name: 'Setup Unity'
-      if: ${{ (runner.os == 'Windows') }}
-      run: |
-        irm https://public-cdn.cloud.unity3d.com/hub/prod/cli/install.ps1 | iex
-        unity --version
-      shell: pwsh
 
     - name: 'Install Unity License'
       id: unity-license-install
@@ -63,28 +58,28 @@ runs:
       continue-on-error: true
       run: |
         UNITY_EDITOR_VERSION=$(grep 'm_EditorVersion:' "${{ inputs.project-path }}/ProjectSettings/ProjectVersion.txt" | sed 's/m_EditorVersion:[[:space:]]*//' | sed 's/[a-z].*//')
+        echo "UNITY_EDITOR_VERSION=$UNITY_EDITOR_VERSION" >>$GITHUB_ENV
         echo "Detected Unity version: $UNITY_EDITOR_VERSION"
-        unity install --no-childModules --force --yes --accept-eula --no-elevate $UNITY_EDITOR_VERSION
+        unityhub --headless install --version $UNITY_EDITOR_VERSION
 
-        echo "Available Modules:"
-        unity install-modules --editor-version $UNITY_EDITOR_VERSION --list
+        unityhub --headless editors --installed
 
         if [ "${{ inputs.build-target }}" = "linux" ]; then
           echo "Installing Editor module linux-mono"
-          unity install-modules --editor-version $UNITY_EDITOR_VERSION --module linux-mono --childModules --accept-eula --yes --no-elevate --retries 10
+          unityhub --headless install-modules --version $UNITY_EDITOR_VERSION --module linux-mono --childModules
         elif [ "${{ inputs.build-target }}" = "macos" ]; then
           echo "Installing Editor module mac-mono"
-          unity install-modules --editor-version $UNITY_EDITOR_VERSION --module mac-mono --childModules --accept-eula --yes --no-elevate --retries 10
+          unityhub --headless install-modules --version $UNITY_EDITOR_VERSION --module mac-mono --childModules
         elif [ "${{ inputs.build-target }}" = "windows" ]; then
           echo "Installing Editor module windows-mono"
-          unity install-modules --editor-version $UNITY_EDITOR_VERSION --module windows-mono --childModules --accept-eula --yes --no-elevate --retries 10
+          unityhub --headless install-modules --version $UNITY_EDITOR_VERSION --module windows-mono --childModules
         fi
       shell: bash
 
     - name: 'Print Install Errors'
       if: ${{ steps.unity-editor-install.outcome == 'failure' }}
       run: |
-        cat "$HOME/.config/UnityHub/logs/cli-log.json"
+        cat "$HOME/.config/UnityHub/logs"/*
       shell: bash
 
     - name: 'Run Unity Editor'
@@ -92,13 +87,14 @@ runs:
       continue-on-error: true
       if: ${{ steps.unity-editor-install.outcome == 'success' }}
       run: |
-        unity run "${{ inputs.project-path }}" -- -username "${{ env.UNITY_EMAIL }}" -password "${{ env.UNITY_PASSWORD }}" -batchmode -nographics -quit -executeMethod "${{ inputs.build-method }}"
+        UNITY_EDITOR_BASE=$(unityhub --headless install-path --get)
+        "$UNITY_EDITOR_BASE/$UNITY_EDITOR_VERSION/Editor/Unity"  -projectPath "${{ inputs.project-path }}" -username "${{ env.UNITY_EMAIL }}" -password "${{ env.UNITY_PASSWORD }}" -batchmode -nographics -quit -executeMethod "${{ inputs.build-method }}"
       shell: bash
 
     - name: 'Print Run Errors'
       if: ${{ steps.unity-editor-run.outcome == 'failure' }}
       run: |
-        cat "$HOME/.config/UnityHub/logs/cli-log.json"
+        cat "$HOME/.config/UnityHub/logs"/*
       shell: bash
 
     - name: 'Uninstall Unity License'
